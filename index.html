@@ -3,56 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PatrongBAA Farms WhatsApp Onboarding</title>
+
+  <title>PatrongBAA Farms - WhatsApp Business Onboarding</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
       margin: 0;
-      padding: 40px 20px;
-      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f7fa;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
     }
 
     .card {
+      width: 90%;
       max-width: 650px;
-      margin: 80px auto;
-      background: white;
-      padding: 45px 30px;
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      background: #ffffff;
+      padding: 45px 35px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      text-align: center;
     }
 
     h1 {
-      margin-bottom: 25px;
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 32px;
     }
 
     p {
       font-size: 17px;
       line-height: 1.6;
+      margin-bottom: 30px;
     }
 
     button {
-      margin-top: 25px;
-      background-color: #1877f2;
-      color: white;
+      background: #1877f2;
+      color: #ffffff;
       border: 0;
       border-radius: 6px;
-      padding: 14px 24px;
+      padding: 14px 28px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
     }
 
     button:hover {
-      background-color: #166fe5;
+      background: #166fe5;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     #status {
       margin-top: 25px;
       font-size: 15px;
-      color: #444;
-      white-space: pre-line;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -60,6 +75,7 @@
 <body>
 
   <div class="card">
+
     <h1>PatrongBAA Farms</h1>
 
     <p>
@@ -67,33 +83,34 @@
       Platform while continuing to use the WhatsApp Business app.
     </p>
 
-    <button onclick="launchWhatsAppSignup()">
+    <button
+      id="connectButton"
+      onclick="launchWhatsAppSignup()">
       Connect WhatsApp Business
     </button>
 
-    <div id="status">
-      Ready to connect your WhatsApp Business account.
-    </div>
+    <div id="status"></div>
+
   </div>
 
-  <!-- Facebook JavaScript SDK -->
-  <div id="fb-root"></div>
 
+  <!-- Facebook JavaScript SDK -->
   <script>
-    window.fbAsyncInit = function() {
-      console.log("Facebook SDK initialization started.");
+    window.fbAsyncInit = function () {
 
       FB.init({
-        appId: "1052159027462760",
+        appId: '1052159027462760',
         cookie: true,
         xfbml: true,
-        version: "v26.0"
+        version: 'v26.0'
       });
 
-      console.log("Facebook SDK initialized successfully.");
+      console.log('Facebook SDK initialized successfully.');
     };
 
-    (function(d, s, id) {
+
+    (function (d, s, id) {
+
       var js;
       var fjs = d.getElementsByTagName(s)[0];
 
@@ -103,127 +120,214 @@
 
       js = d.createElement(s);
       js.id = id;
-      js.src = "https://connect.facebook.net/en_US/sdk.js";
-      js.async = true;
-      js.defer = true;
-      js.crossOrigin = "anonymous";
+      js.src = 'https://connect.facebook.net/en_US/sdk.js';
 
       fjs.parentNode.insertBefore(js, fjs);
-    }(document, "script", "facebook-jssdk"));
+
+      console.log('Facebook SDK initialization started.');
+
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
 
 
-    /* Receive messages from Embedded Signup */
-    window.addEventListener("message", (event) => {
-      console.log("Embedded Signup message received:", event.data);
-    });
+  <script>
+
+    /*
+     * n8n production webhook
+     *
+     * The authorization code is sent as application/x-www-form-urlencoded
+     * instead of application/json so the browser does not perform the
+     * CORS preflight request.
+     */
+    const N8N_WEBHOOK_URL =
+      'https://bernardmendy.app.n8n.cloud/webhook/0df3f4ac-3925-4a8c-81c5-00e6733ee38f8';
 
 
-    /* Send authorization code to n8n backend */
+    /*
+     * Send the Meta authorization code to n8n.
+     */
     const sendCodeToBackend = async (code) => {
-      const status = document.getElementById("status");
+
+      const status = document.getElementById('status');
+      const button = document.getElementById('connectButton');
 
       status.textContent =
-        "Meta authorization completed. Sending authorization code to the secure backend...";
+        'Meta authorization completed. Sending authorization code to the secure backend...';
+
+      button.disabled = true;
 
       try {
+
+        /*
+         * IMPORTANT:
+         * Do not set Content-Type to application/json.
+         *
+         * URLSearchParams causes the browser to use a simple form request,
+         * avoiding the OPTIONS preflight that was causing the CORS error.
+         */
+        const formData = new URLSearchParams();
+
+        formData.append('code', code);
+
         const result = await fetch(
-          "https://bernardmendy.app.n8n.cloud/webhook/0df3f4ac-3925-4a8c-81c5-00e6733ee38f8",
+          N8N_WEBHOOK_URL,
           {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              code: code
-            })
+            method: 'POST',
+            body: formData
           }
         );
 
-        if (result.ok) {
-          status.textContent =
-            "Authorization code sent successfully. Completing WhatsApp Business Platform connection...";
 
-          console.log("Authorization code successfully sent to backend.");
-        } else {
+        /*
+         * Read the backend response.
+         */
+        const responseText = await result.text();
+
+        console.log(
+          'n8n backend response:',
+          result.status,
+          responseText
+        );
+
+
+        if (result.ok) {
+
           status.textContent =
-            "The authorization code could not be sent to the backend.";
+            'Authorization code sent successfully. Completing WhatsApp Business Platform connection...';
+
+        } else {
+
+          status.textContent =
+            'The onboarding backend returned an error. Please check the n8n execution.';
 
           console.error(
-            "Backend response:",
-            await result.text()
+            'n8n backend error:',
+            result.status,
+            responseText
           );
+
+          button.disabled = false;
         }
 
       } catch (error) {
-        status.textContent =
-          "Could not connect to the onboarding backend.";
 
-        console.error("Backend error:", error);
+        console.error(
+          'Backend error:',
+          error
+        );
+
+        status.textContent =
+          'Could not connect to the onboarding backend.';
+
+        button.disabled = false;
       }
     };
 
 
-    /* Meta login callback */
+    /*
+     * Facebook Login callback.
+     *
+     * IMPORTANT:
+     * This function is deliberately NOT async.
+     * FB.login requires a normal callback function.
+     */
     const fbLoginCallback = (response) => {
-      const status = document.getElementById("status");
 
-      console.log("Facebook login callback:", response);
+      const status = document.getElementById('status');
 
-      if (response.authResponse) {
+      console.log(
+        'Facebook login callback:',
+        response
+      );
+
+
+      if (response && response.authResponse) {
 
         const code = response.authResponse.code;
 
-        console.log("Authorization code received:", code);
+        console.log(
+          'Authorization code received.'
+        );
 
+        /*
+         * Never display the actual authorization code on the page.
+         */
         sendCodeToBackend(code);
 
       } else {
 
         status.textContent =
-          "The Meta login/Embedded Signup flow was cancelled or did not return an authorization response.";
+          'The Meta login/Embedded Signup flow was cancelled or did not return an authorization response.';
 
         console.log(
-          "Embedded Signup response:",
+          'Embedded Signup response:',
           response
         );
       }
     };
 
 
-    /* Launch WhatsApp Business App onboarding / Coexistence */
+    /*
+     * Launch Meta Embedded Signup.
+     *
+     * This is the WhatsApp Business App onboarding flow,
+     * which is the Coexistence flow we are setting up.
+     */
     const launchWhatsAppSignup = () => {
 
-      console.log("Connect WhatsApp Business button clicked.");
+      const status = document.getElementById('status');
+      const button = document.getElementById('connectButton');
 
-      const status = document.getElementById("status");
+      console.log(
+        'Connect WhatsApp Business button clicked.'
+      );
+
 
       status.textContent =
-        "Opening Meta WhatsApp Business onboarding...";
+        'Opening Meta WhatsApp Business onboarding...';
 
-      if (typeof FB === "undefined") {
+      button.disabled = true;
+
+
+      if (typeof FB === 'undefined') {
+
+        console.error(
+          'Facebook SDK is not available.'
+        );
 
         status.textContent =
-          "Facebook SDK has not loaded yet. Please wait a moment and try again.";
+          'Facebook SDK has not loaded yet. Please refresh the page and try again.';
 
-        console.error("FB is not defined.");
+        button.disabled = false;
 
         return;
       }
 
+
+      console.log(
+        'FB object:',
+        FB
+      );
+
+
       FB.login(
         fbLoginCallback,
         {
-          config_id: "952366671241090",
-          response_type: "code",
+          config_id: '952366671241090',
+
+          response_type: 'code',
+
           override_default_response_type: true,
 
           extras: {
-            version: "v4",
-            featureType: "whatsapp_business_app_onboarding"
+            version: 'v4',
+            featureType: 'whatsapp_business_app_onboarding',
+            sessionInfoVersion: '3'
           }
         }
       );
     };
+
   </script>
 
 </body>
