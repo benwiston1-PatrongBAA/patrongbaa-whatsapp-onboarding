@@ -1,352 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+const sendCodeToBackend = async (code) => {
+  const status = document.getElementById('status');
 
-  <title>PatrongBAA Farms – WhatsApp Onboarding</title>
+  status.textContent =
+    'Meta authorization completed. Sending authorization code to the secure backend...';
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    .card {
-      max-width: 720px;
-      margin: 80px auto;
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    h1 {
-      margin-top: 0;
-      color: #222;
-    }
-
-    p {
-      color: #555;
-      line-height: 1.6;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 14px 22px;
-      font-size: 16px;
-      font-weight: bold;
-      color: white;
-      background-color: #1877f2;
-      border: 0;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #166fe5;
-    }
-
-    #status {
-      margin-top: 25px;
-      padding: 15px;
-      white-space: pre-wrap;
-      text-align: left;
-      background: #f7f7f7;
-      border-radius: 8px;
-      color: #333;
-      font-size: 14px;
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="card">
-
-    <h1>PatrongBAA Farms</h1>
-
-    <p>
-      Connect this WhatsApp Business app number to the
-      WhatsApp Business Platform while continuing to use
-      the WhatsApp Business app.
-    </p>
-
-    <button id="connectButton" onclick="launchWhatsAppSignup()">
-      Connect WhatsApp Business
-    </button>
-
-    <div id="status">
-      Ready to connect your WhatsApp Business account.
-    </div>
-
-  </div>
-
-
-  <!-- Facebook JavaScript SDK -->
-  <script>
-    window.fbAsyncInit = function () {
-
-      console.log("Facebook SDK initialization started.");
-
-      FB.init({
-        appId: '1052159027462760',
-        cookie: true,
-        xfbml: true,
-        autoLogAppEvents: true,
-        version: 'v26.0'
-      });
-
-      console.log("Facebook SDK initialized successfully.");
-    };
-
-
-    /*
-     * Receive messages from the Embedded Signup dialog.
-     */
-    window.addEventListener("message", function (event) {
-
-      console.log("Embedded Signup message received:", event.data);
-
-      try {
-
-        if (event.data) {
-          console.log(
-            "Embedded Signup session data:",
-            event.data
-          );
-        }
-
-      } catch (error) {
-
-        console.error(
-          "Error processing Embedded Signup message:",
-          error
-        );
-
+  try {
+    const result = await fetch(
+      'https://bernardmendy.app.n8n.cloud/webhook/0df3f4ac-3925-4a8c-81c5-00e673ee38f8',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: code
+        })
       }
+    );
 
-    });
-
-
-    /*
-     * Facebook Login callback.
-     */
-    const fbLoginCallback = async function (response) {
-
-      console.log(
-        "Facebook Login callback received:",
-        response
-      );
-
-      const status =
-        document.getElementById("status");
-
-      if (
-        response &&
-        response.authResponse &&
-        response.authResponse.code
-      ) {
-
-        const code =
-          response.authResponse.code;
-
-        console.log(
-          "Authorization code received successfully."
-        );
-
-        status.textContent =
-          "Meta authorization completed.\n\n" +
-          "Authorization code received.\n\n" +
-          "Sending authorization code securely to the backend...";
-
-
-        /*
-         * Send the authorization code to n8n.
-         *
-         * IMPORTANT:
-         * The Meta App Secret is NOT placed in this webpage.
-         * It must remain on the backend.
-         */
-        try {
-
-          const result = await fetch(
-            "https://bernardmendy.app.n8n.cloud/webhook/0df3fa4c-3925-4a8c-81c5-00e6733e338f8",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type": "application/json"
-              },
-
-              body: JSON.stringify({
-                code: code
-              })
-            }
-          );
-
-
-          console.log(
-            "Backend HTTP status:",
-            result.status
-          );
-
-
-          const responseText =
-            await result.text();
-
-          console.log(
-            "Backend response:",
-            responseText
-          );
-
-
-          if (result.ok) {
-
-            status.textContent =
-              "Authorization code sent successfully.\n\n" +
-              "Completing the WhatsApp Business Platform connection...";
-
-          } else {
-
-            status.textContent =
-              "The authorization code reached the backend, " +
-              "but the backend returned an error.\n\n" +
-              "HTTP status: " +
-              result.status;
-
-            console.error(
-              "Backend error:",
-              responseText
-            );
-
-          }
-
-        } catch (error) {
-
-          console.error(
-            "Backend connection error:",
-            error
-          );
-
-          status.textContent =
-            "Meta authorization succeeded, but the authorization " +
-            "code could not be sent to the backend.\n\n" +
-            "Please check the browser Console.";
-
-        }
-
-      } else {
-
-        console.log(
-          "Facebook Login did not return an authorization code.",
-          response
-        );
-
-        status.textContent =
-          "The Meta login/Embedded Signup flow was cancelled " +
-          "or did not return an authorization code.";
-
-      }
-
-    };
-
-
-    /*
-     * Launch WhatsApp Business App Onboarding / Coexistence.
-     */
-    window.launchWhatsAppSignup = function () {
-
-      console.log(
-        "========================================"
-      );
-
-      console.log(
-        "Connect WhatsApp Business button clicked."
-      );
-
-      console.log(
-        "FB object:",
-        window.FB
-      );
-
-      console.log(
-        "========================================"
-      );
-
-
-      const status =
-        document.getElementById("status");
-
-
-      /*
-       * Make sure the Facebook SDK is available.
-       */
-      if (
-        typeof FB === "undefined"
-      ) {
-
-        console.error(
-          "Facebook SDK is not available."
-        );
-
-        status.textContent =
-          "Facebook SDK has not loaded yet.\n\n" +
-          "Please refresh the page and try again.";
-
-        return;
-      }
-
-
+    if (result.ok) {
       status.textContent =
-        "Opening Meta WhatsApp Business onboarding...";
+        'Authorization code sent successfully. Completing WhatsApp Business Platform connection...';
+    } else {
+      status.textContent =
+        'The authorization code could not be sent to the backend.';
+      console.error('Backend response:', await result.text());
+    }
+  } catch (error) {
+    status.textContent =
+      'Could not connect to the onboarding backend.';
+    console.error('Backend error:', error);
+  }
+};
 
+const fbLoginCallback = (response) => {
+  const status = document.getElementById('status');
 
-      /*
-       * IMPORTANT:
-       *
-       * featureType:
-       * whatsapp_business_app_onboarding
-       *
-       * is the setting that launches the
-       * existing WhatsApp Business App onboarding /
-       * Coexistence flow.
-       */
-      FB.login(
-        fbLoginCallback,
-        {
-          config_id: "952366671241090",
+  if (response.authResponse) {
+    const code = response.authResponse.code;
 
-          response_type: "code",
+    console.log('Authorization code received:', code);
 
-          override_default_response_type: true,
+    sendCodeToBackend(code);
+  } else {
+    status.textContent =
+      'The Meta login/Embedded Signup flow was cancelled or did not return an authorization response.';
 
-          extras: {
-            version: "v4",
-
-            featureType:
-              "whatsapp_business_app_onboarding",
-
-            sessionInfoVersion: "3"
-          }
-        }
-      );
-
-    };
-
-  </script>
-
-
-  <!-- Load Facebook JavaScript SDK -->
-  <script
-    async
-    defer
-    crossorigin="anonymous"
-    src="https://connect.facebook.net/en_US/sdk.js">
-  </script>
-
-</body>
-</html>
+    console.log('Embedded Signup response:', response);
+  }
+};
