@@ -36,18 +36,49 @@
       console.log('Embedded Signup message:', event.data);
     });
 
-    const fbLoginCallback = (response) => {
-      const status = document.getElementById('status');
+    const fbLoginCallback = async (response) => {
+  const status = document.getElementById('status');
 
-      if (response.authResponse) {
-        const code = response.authResponse.code;
-        status.textContent = 'Meta authorization completed. Authorization code received.\n\nThe code must now be sent to the backend for the server-to-server token exchange.';
-        console.log('Authorization code received:', code);
-      } else {
-        status.textContent = 'The Meta login/Embedded Signup flow was cancelled or did not return an authorization response.';
-        console.log('Embedded Signup response:', response);
+  if (!response.authResponse) {
+    status.textContent =
+      'The Meta login/Embedded Signup flow was cancelled or did not return an authorization response.';
+    console.log('Embedded Signup response:', response);
+    return;
+  }
+
+  const code = response.authResponse.code;
+
+  status.textContent =
+    'Meta authorization completed. Sending authorization code to the secure backend...';
+
+  try {
+    const result = await fetch(
+      'https://bernardmendy.app.n8n.cloud/webhook/0df3fa4c-3925-4a8c-81c5-00e673ee38f8',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: code
+        })
       }
-    };
+    );
+
+    if (result.ok) {
+      status.textContent =
+        'Authorization code sent successfully. Completing WhatsApp Business Platform connection...';
+    } else {
+      status.textContent =
+        'The authorization code could not be sent to the backend.';
+      console.error('Backend response:', await result.text());
+    }
+  } catch (error) {
+    status.textContent =
+      'Could not connect to the onboarding backend.';
+    console.error('Backend error:', error);
+  }
+};
 
     const launchWhatsAppSignup = () => {
       FB.login(fbLoginCallback, {
