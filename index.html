@@ -95,7 +95,9 @@
 
 
   <!-- Facebook JavaScript SDK -->
+
   <script>
+
     window.fbAsyncInit = function () {
 
       FB.init({
@@ -106,6 +108,7 @@
       });
 
       console.log('Facebook SDK initialized successfully.');
+
     };
 
 
@@ -127,6 +130,7 @@
       console.log('Facebook SDK initialization started.');
 
     }(document, 'script', 'facebook-jssdk'));
+
   </script>
 
 
@@ -139,13 +143,15 @@
      * instead of application/json so the browser does not perform the
      * CORS preflight request.
      */
+
     const N8N_WEBHOOK_URL =
-      'https://bernardmendy.app.n8n.cloud/webhook/0df3f4ac-3925-4a8c-81c5-00e6733ee38f8';
+      'https://bernardmendy.app.n8n.cloud/webhook/patrongbaa-onboarding';
 
 
     /*
      * Send the Meta authorization code to n8n.
      */
+
     const sendCodeToBackend = async (code) => {
 
       const status = document.getElementById('status');
@@ -165,6 +171,7 @@
          * URLSearchParams causes the browser to use a simple form request,
          * avoiding the OPTIONS preflight that was causing the CORS error.
          */
+
         const formData = new URLSearchParams();
 
         formData.append('code', code);
@@ -181,6 +188,7 @@
         /*
          * Read the backend response.
          */
+
         const responseText = await result.text();
 
         console.log(
@@ -207,6 +215,7 @@
           );
 
           button.disabled = false;
+
         }
 
       } catch (error) {
@@ -220,7 +229,9 @@
           'Could not connect to the onboarding backend.';
 
         button.disabled = false;
+
       }
+
     };
 
 
@@ -231,6 +242,7 @@
      * This function is deliberately NOT async.
      * FB.login requires a normal callback function.
      */
+
     const fbLoginCallback = (response) => {
 
       const status = document.getElementById('status');
@@ -249,9 +261,11 @@
           'Authorization code received.'
         );
 
+
         /*
          * Never display the actual authorization code on the page.
          */
+
         sendCodeToBackend(code);
 
       } else {
@@ -263,7 +277,9 @@
           'Embedded Signup response:',
           response
         );
+
       }
+
     };
 
 
@@ -273,6 +289,7 @@
      * This is the WhatsApp Business App onboarding flow,
      * which is the Coexistence flow we are setting up.
      */
+
     const launchWhatsAppSignup = () => {
 
       const status = document.getElementById('status');
@@ -301,6 +318,7 @@
         button.disabled = false;
 
         return;
+
       }
 
 
@@ -320,12 +338,18 @@
           override_default_response_type: true,
 
           extras: {
+
             version: 'v4',
+
             featureType: 'whatsapp_business_app_onboarding',
+
             sessionInfoVersion: '3'
+
           }
+
         }
       );
+
     };
 
   </script>
