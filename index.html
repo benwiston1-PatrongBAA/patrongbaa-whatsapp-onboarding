@@ -138,10 +138,6 @@
 
     /*
      * n8n production webhook
-     *
-     * The authorization code is sent as application/x-www-form-urlencoded
-     * instead of application/json so the browser does not perform the
-     * CORS preflight request.
      */
 
     const N8N_WEBHOOK_URL =
@@ -150,6 +146,9 @@
 
     /*
      * Send the Meta authorization code to n8n.
+     *
+     * We use application/x-www-form-urlencoded so the browser
+     * can send the request without a CORS preflight.
      */
 
     const sendCodeToBackend = async (code) => {
@@ -164,14 +163,6 @@
 
       try {
 
-        /*
-         * IMPORTANT:
-         * Do not set Content-Type to application/json.
-         *
-         * URLSearchParams causes the browser to use a simple form request,
-         * avoiding the OPTIONS preflight that was causing the CORS error.
-         */
-
         const formData = new URLSearchParams();
 
         formData.append('code', code);
@@ -184,10 +175,6 @@
           }
         );
 
-
-        /*
-         * Read the backend response.
-         */
 
         const responseText = await result.text();
 
@@ -238,9 +225,7 @@
     /*
      * Facebook Login callback.
      *
-     * IMPORTANT:
-     * This function is deliberately NOT async.
-     * FB.login requires a normal callback function.
+     * The callback itself is deliberately NOT async.
      */
 
     const fbLoginCallback = (response) => {
@@ -253,17 +238,20 @@
       );
 
 
-      if (response && response.authResponse) {
+      if (
+        response &&
+        response.authResponse &&
+        response.authResponse.code
+      ) {
 
         const code = response.authResponse.code;
 
         console.log(
-          'Authorization code received.'
+          'Authorization code received from Meta.'
         );
 
-
         /*
-         * Never display the actual authorization code on the page.
+         * Do not display the authorization code.
          */
 
         sendCodeToBackend(code);
@@ -286,8 +274,13 @@
     /*
      * Launch Meta Embedded Signup.
      *
-     * This is the WhatsApp Business App onboarding flow,
-     * which is the Coexistence flow we are setting up.
+     * IMPORTANT:
+     *
+     * featureType:
+     * whatsapp_business_app_onboarding
+     *
+     * is what selects the WhatsApp Business App
+     * Coexistence onboarding flow.
      */
 
     const launchWhatsAppSignup = () => {
@@ -323,8 +316,7 @@
 
 
       console.log(
-        'FB object:',
-        FB
+        'Facebook SDK is ready.'
       );
 
 
@@ -339,11 +331,22 @@
 
           extras: {
 
-            version: 'v4',
+            /*
+             * Required empty setup object for the v4
+             * Embedded Signup launch.
+             */
 
-            featureType: 'whatsapp_business_app_onboarding',
+            setup: {},
 
-            sessionInfoVersion: '3'
+            /*
+             * THIS IS THE COEXISTENCE SELECTOR.
+             *
+             * It tells Meta that we are onboarding an
+             * existing WhatsApp Business App number while
+             * keeping the Business App active.
+             */
+
+            featureType: 'whatsapp_business_app_onboarding'
 
           }
 
