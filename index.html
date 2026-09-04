@@ -107,7 +107,9 @@
         version: 'v26.0'
       });
 
-      console.log('Facebook SDK initialized successfully.');
+      console.log(
+        'Facebook SDK initialized successfully.'
+      );
 
     };
 
@@ -127,7 +129,9 @@
 
       fjs.parentNode.insertBefore(js, fjs);
 
-      console.log('Facebook SDK initialization started.');
+      console.log(
+        'Facebook SDK initialization started.'
+      );
 
     }(document, 'script', 'facebook-jssdk'));
 
@@ -137,7 +141,9 @@
   <script>
 
     /*
-     * n8n production webhook
+     * ============================================================
+     * n8n PRODUCTION WEBHOOK
+     * ============================================================
      */
 
     const N8N_WEBHOOK_URL =
@@ -145,38 +151,50 @@
 
 
     /*
-     * Send the Meta authorization code to n8n.
-     *
-     * We use application/x-www-form-urlencoded so the browser
-     * can send the request without a CORS preflight.
+     * ============================================================
+     * SEND META AUTHORIZATION CODE TO n8n
+     * ============================================================
      */
 
     const sendCodeToBackend = async (code) => {
 
-      const status = document.getElementById('status');
-      const button = document.getElementById('connectButton');
+      const status =
+        document.getElementById('status');
+
+      const button =
+        document.getElementById('connectButton');
+
 
       status.textContent =
         'Meta authorization completed. Sending authorization code to the secure backend...';
 
       button.disabled = true;
 
+
       try {
 
-        const formData = new URLSearchParams();
+        const formData =
+          new URLSearchParams();
 
-        formData.append('code', code);
-
-        const result = await fetch(
-          N8N_WEBHOOK_URL,
-          {
-            method: 'POST',
-            body: formData
-          }
+        formData.append(
+          'code',
+          code
         );
 
 
-        const responseText = await result.text();
+        const result =
+          await fetch(
+            N8N_WEBHOOK_URL,
+            {
+              method: 'POST',
+              body: formData
+            }
+          );
+
+
+        const responseText =
+          await result.text();
+
 
         console.log(
           'n8n backend response:',
@@ -195,11 +213,13 @@
           status.textContent =
             'The onboarding backend returned an error. Please check the n8n execution.';
 
+
           console.error(
             'n8n backend error:',
             result.status,
             responseText
           );
+
 
           button.disabled = false;
 
@@ -212,8 +232,10 @@
           error
         );
 
+
         status.textContent =
           'Could not connect to the onboarding backend.';
+
 
         button.disabled = false;
 
@@ -223,14 +245,18 @@
 
 
     /*
-     * Facebook Login callback.
+     * ============================================================
+     * FACEBOOK LOGIN CALLBACK
+     * ============================================================
      *
-     * The callback itself is deliberately NOT async.
+     * The callback deliberately remains synchronous.
      */
 
     const fbLoginCallback = (response) => {
 
-      const status = document.getElementById('status');
+      const status =
+        document.getElementById('status');
+
 
       console.log(
         'Facebook login callback:',
@@ -238,28 +264,39 @@
       );
 
 
+      /*
+       * Meta returned an authorization code.
+       */
+
       if (
         response &&
         response.authResponse &&
         response.authResponse.code
       ) {
 
-        const code = response.authResponse.code;
+        const code =
+          response.authResponse.code;
+
 
         console.log(
           'Authorization code received from Meta.'
         );
 
+
         /*
-         * Do not display the authorization code.
+         * Never display the authorization code.
          */
 
-        sendCodeToBackend(code);
+        sendCodeToBackend(
+          code
+        );
+
 
       } else {
 
         status.textContent =
           'The Meta login/Embedded Signup flow was cancelled or did not return an authorization response.';
+
 
         console.log(
           'Embedded Signup response:',
@@ -272,21 +309,35 @@
 
 
     /*
-     * Launch Meta Embedded Signup.
+     * ============================================================
+     * LAUNCH WHATSAPP BUSINESS COEXISTENCE
+     * ============================================================
      *
      * IMPORTANT:
      *
-     * featureType:
-     * whatsapp_business_app_onboarding
+     * config_id
+     * ----------
+     * This must match the Meta Embedded Signup configuration.
      *
-     * is what selects the WhatsApp Business App
-     * Coexistence onboarding flow.
+     * featureType
+     * -----------
+     * whatsapp_business_app_onboarding tells Meta to use the
+     * WhatsApp Business App onboarding / Coexistence flow.
+     *
+     * sessionInfoVersion
+     * ------------------
+     * Included for compatibility with the current Coexistence
+     * implementation.
      */
 
     const launchWhatsAppSignup = () => {
 
-      const status = document.getElementById('status');
-      const button = document.getElementById('connectButton');
+      const status =
+        document.getElementById('status');
+
+      const button =
+        document.getElementById('connectButton');
+
 
       console.log(
         'Connect WhatsApp Business button clicked.'
@@ -296,8 +347,13 @@
       status.textContent =
         'Opening Meta WhatsApp Business onboarding...';
 
+
       button.disabled = true;
 
+
+      /*
+       * Make sure the Facebook SDK has loaded.
+       */
 
       if (typeof FB === 'undefined') {
 
@@ -305,10 +361,13 @@
           'Facebook SDK is not available.'
         );
 
+
         status.textContent =
           'Facebook SDK has not loaded yet. Please refresh the page and try again.';
 
+
         button.disabled = false;
+
 
         return;
 
@@ -320,33 +379,71 @@
       );
 
 
+      /*
+       * ==========================================================
+       * META EMBEDDED SIGNUP
+       * ==========================================================
+       */
+
       FB.login(
         fbLoginCallback,
         {
-          config_id: '952366671241090',
 
-          response_type: 'code',
+          /*
+           * Meta Login for Business configuration.
+           */
 
-          override_default_response_type: true,
+          config_id:
+            '952366671241090',
+
+
+          /*
+           * Request an authorization CODE rather than an
+           * access token.
+           */
+
+          response_type:
+            'code',
+
+
+          /*
+           * Required when using the authorization-code flow.
+           */
+
+          override_default_response_type:
+            true,
+
+
+          /*
+           * Embedded Signup options.
+           */
 
           extras: {
 
             /*
-             * Required empty setup object for the v4
-             * Embedded Signup launch.
+             * v4 Embedded Signup setup object.
              */
 
             setup: {},
 
+
             /*
-             * THIS IS THE COEXISTENCE SELECTOR.
+             * IMPORTANT:
              *
-             * It tells Meta that we are onboarding an
-             * existing WhatsApp Business App number while
-             * keeping the Business App active.
+             * This selects WhatsApp Business App
+             * Coexistence onboarding.
              */
 
-            featureType: 'whatsapp_business_app_onboarding'
+            featureType:
+              'whatsapp_business_app_onboarding',
+
+
+            /*
+             * Coexistence session information version.
+             */
+
+            sessionInfoVersion:
+              '3'
 
           }
 
