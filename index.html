@@ -200,13 +200,13 @@
   /*
    * ============================================================
    * PATRONGBAA FARMS
-   * WHATSAPP COEXISTENCE ONBOARDING
+   * WHATSAPP BUSINESS COEXISTENCE ONBOARDING
    * ============================================================
    *
    * IMPORTANT:
    *
-   * This version deliberately uses the OAuth URL flow that
-   * previously produced successful execution #9220.
+   * OAuth authorization code and the
+   * WA_EMBEDDED_SIGNUP event are handled separately.
    *
    * DO NOT change the n8n HTTP Request2 node.
    * DO NOT change Verify Coexistence Token.
@@ -234,7 +234,8 @@
 
   function setStatus(message, type) {
 
-    const status = document.getElementById("status");
+    const status =
+      document.getElementById("status");
 
     status.className = "";
 
@@ -248,7 +249,8 @@
 
   function debug(message) {
 
-    const box = document.getElementById("debug");
+    const box =
+      document.getElementById("debug");
 
     box.style.display = "block";
 
@@ -258,12 +260,7 @@
 
   /*
    * ------------------------------------------------------------
-   * Coexistence event storage
-   * ------------------------------------------------------------
-   *
-   * The WA_EMBEDDED_SIGNUP event is NOT the OAuth code.
-   *
-   * We capture it separately.
+   * Handle the Coexistence event
    * ------------------------------------------------------------
    */
 
@@ -275,42 +272,116 @@
         return;
       }
 
-      /*
-       * Facebook can send postMessage data as a JSON string.
-       */
 
       let data = eventData;
+
+
+      /*
+       * Facebook may send JSON as a string.
+       */
 
       if (typeof data === "string") {
 
         try {
+
           data = JSON.parse(data);
-        } catch (e) {
+
+        } catch (error) {
+
+          console.log(
+            "Non-JSON Facebook message received."
+          );
+
           return;
         }
       }
 
 
       /*
-       * We only care about the Embedded Signup event.
+       * We only want WA_EMBEDDED_SIGNUP.
        */
 
       if (
         !data ||
+        typeof data !== "object" ||
         data.type !== "WA_EMBEDDED_SIGNUP"
       ) {
+
         return;
       }
 
 
       console.log(
-        "WA_EMBEDDED_SIGNUP event received:",
+        "========================================"
+      );
+
+      console.log(
+        "WA_EMBEDDED_SIGNUP EVENT FOUND!"
+      );
+
+      console.log(
+        "Full event:",
         data
       );
 
 
+      const eventName =
+        data.event || "";
+
+      const version =
+        data.version || "";
+
+      const wabaId =
+        data.data &&
+        data.data.waba_id
+          ? data.data.waba_id
+          : "";
+
+      const phoneNumberId =
+        data.data &&
+        data.data.phone_number_id
+          ? data.data.phone_number_id
+          : "";
+
+      const businessId =
+        data.data &&
+        data.data.business_id
+          ? data.data.business_id
+          : "";
+
+
+      console.log(
+        "Event:",
+        eventName
+      );
+
+      console.log(
+        "Version:",
+        version
+      );
+
+      console.log(
+        "WABA ID:",
+        wabaId || "[not included]"
+      );
+
+      console.log(
+        "Phone Number ID:",
+        phoneNumberId || "[not included]"
+      );
+
+      console.log(
+        "Business ID:",
+        businessId || "[not included]"
+      );
+
+      console.log(
+        "========================================"
+      );
+
+
       /*
-       * Save the entire event.
+       * Save the event in this browser context.
        */
 
       sessionStorage.setItem(
@@ -319,36 +390,51 @@
       );
 
 
-      /*
-       * Extract the useful information.
-       */
-
-      const eventName = data.event || "";
-
-      const version = data.version || "";
-
-      const wabaId =
-        data.data &&
-        data.data.waba_id
-          ? data.data.waba_id
-          : "";
-
-
-      /*
-       * Store the WABA ID separately.
-       */
-
       if (wabaId) {
 
         sessionStorage.setItem(
           "WA_WABA_ID",
           wabaId
         );
+
+      }
+
+
+      /*
+       * If Meta is running inside our popup,
+       * send the event to the original page too.
+       */
+
+      if (
+        window.opener &&
+        !window.opener.closed
+      ) {
+
+        try {
+
+          window.opener.postMessage(
+            {
+              type:
+                "PATRONGBAA_WA_EMBEDDED_SIGNUP",
+              data: data
+            },
+            REDIRECT_URI.replace(/\/$/, "")
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Could not relay Coexistence event to opener:",
+            error
+          );
+
+        }
+
       }
 
 
       debug(
-        "WA_EMBEDDED_SIGNUP received"
+        "WA_EMBEDDED_SIGNUP received."
       );
 
       debug(
@@ -360,16 +446,17 @@
       );
 
       debug(
-        "WABA ID: " + (
+        "WABA ID: " +
+        (
           wabaId
             ? "[captured]"
-            : "[not included in event]"
+            : "[not included]"
         )
       );
 
 
       /*
-       * This is the successful Coexistence completion event.
+       * Successful Coexistence completion.
        */
 
       if (
@@ -383,13 +470,6 @@
           "success"
         );
 
-        console.log(
-          "Coexistence onboarding completed.",
-          {
-            waba_id: wabaId,
-            version: version
-          }
-        );
       }
 
     } catch (error) {
@@ -406,164 +486,122 @@
 
   /*
    * ------------------------------------------------------------
-   * GLOBAL postMessage listener
+   * FACEBOOK postMessage LISTENER
    * ------------------------------------------------------------
    *
-   * This is installed BEFORE opening Meta.
+   * This listener receives the Meta Embedded Signup event.
    * ------------------------------------------------------------
    */
 
   window.addEventListener(
-  "message",
-  function(event) {
+    "message",
+    function(event) {
 
-    console.log("========== FACEBOOK MESSAGE ==========");
-    console.log("Origin:", event.origin);
-    console.log("Data type:", typeof event.data);
-    console.log("Raw data:", event.data);
+      console.log(
+        "========== FACEBOOK MESSAGE =========="
+      );
 
-    /*
-     * Accept Facebook domains only.
-     */
-    const isFacebook =
-      event.origin === "https://www.facebook.com" ||
-      event.origin === "https://web.facebook.com" ||
-      event.origin === "https://business.facebook.com" ||
-      event.origin.endsWith(".facebook.com");
+      console.log(
+        "Origin:",
+        event.origin
+      );
 
-    if (!isFacebook) {
-      console.log("Ignored non-Facebook message.");
-      return;
-    }
+      console.log(
+        "Data type:",
+        typeof event.data
+      );
 
-    /*
-     * Facebook may send either:
-     * 1. an actual JavaScript object
-     * 2. a JSON string
-     */
-    let data = event.data;
+      console.log(
+        "Raw data:",
+        event.data
+      );
 
-    if (typeof data === "string") {
 
-      try {
-        data = JSON.parse(data);
-        console.log("Parsed JSON:", data);
-      } catch (error) {
+      /*
+       * Accept Facebook origins only.
+       */
 
-        /*
-         * Do NOT call this an error anymore.
-         * Facebook sends other non-JSON messages as well.
-         */
+      const isFacebook =
+        event.origin ===
+          "https://www.facebook.com" ||
+
+        event.origin ===
+          "https://web.facebook.com" ||
+
+        event.origin ===
+          "https://business.facebook.com" ||
+
+        event.origin.endsWith(
+          ".facebook.com"
+        );
+
+
+      if (!isFacebook) {
+
         console.log(
-          "Non-JSON Facebook message received:",
+          "Ignored non-Facebook message."
+        );
+
+        return;
+      }
+
+
+      let data =
+        event.data;
+
+
+      /*
+       * Facebook can send an object
+       * or a JSON string.
+       */
+
+      if (typeof data === "string") {
+
+        try {
+
+          data =
+            JSON.parse(data);
+
+          console.log(
+            "Parsed Facebook JSON:",
+            data
+          );
+
+        } catch (error) {
+
+          console.log(
+            "Non-JSON Facebook message received:",
+            data
+          );
+
+          return;
+        }
+
+      }
+
+
+      /*
+       * Check for the Coexistence event.
+       */
+
+      if (
+        data &&
+        typeof data === "object" &&
+        data.type ===
+          "WA_EMBEDDED_SIGNUP"
+      ) {
+
+        handleCoexistenceEvent(
           data
         );
 
         return;
       }
-    }
 
-    /*
-     * We are specifically looking for
-     * WA_EMBEDDED_SIGNUP.
-     */
-    if (
-      data &&
-      typeof data === "object" &&
-      data.type === "WA_EMBEDDED_SIGNUP"
-    ) {
 
       console.log(
-        "========================================"
+        "Facebook message received but it is not WA_EMBEDDED_SIGNUP."
       );
-
-      console.log(
-        "WA_EMBEDDED_SIGNUP EVENT FOUND!"
-      );
-
-      console.log(
-        "Full event:",
-        data
-      );
-
-      console.log(
-        "Event:",
-        data.event
-      );
-
-      console.log(
-        "Version:",
-        data.version
-      );
-
-      console.log(
-        "WABA ID:",
-        data.data?.waba_id
-      );
-
-      console.log(
-        "Phone Number ID:",
-        data.data?.phone_number_id
-      );
-
-      console.log(
-        "Business ID:",
-        data.data?.business_id
-      );
-
-      console.log(
-        "========================================"
-      );
-
-      /*
-       * Pass the event to our existing handler.
-       */
-      handleCoexistenceEvent(data);
-
-      return;
-    }
-
-    /*
-     * Show what other Facebook messages look like,
-     * but do not interfere with the OAuth flow.
-     */
-    console.log(
-      "Facebook message received but not WA_EMBEDDED_SIGNUP."
-    );
-    
-  },
-  false
-);
-  
-      /*
-       * Only accept Facebook-related origins.
-       */
-
-      const allowed =
-        event.origin === "https://www.facebook.com" ||
-        event.origin === "https://web.facebook.com" ||
-        event.origin === "https://business.facebook.com" ||
-        event.origin.endsWith(".facebook.com");
-
-
-      if (!allowed) {
-        return;
-      }
-
-
-      /*
-       * Ignore ordinary Facebook bridge messages.
-       */
-
-      if (
-        typeof event.data !== "string" &&
-        typeof event.data !== "object"
-      ) {
-        return;
-      }
-
-
-      handleCoexistenceEvent(event.data);
 
     },
     false
@@ -572,7 +610,7 @@
 
   /*
    * ------------------------------------------------------------
-   * Receive messages from the OAuth popup.
+   * RECEIVE WA EVENT FROM POPUP
    * ------------------------------------------------------------
    */
 
@@ -584,36 +622,77 @@
         event.origin !==
         window.location.origin
       ) {
+
         return;
       }
 
 
-      let data = event.data;
-
-
-      if (
-        typeof data === "string"
-      ) {
-
-        try {
-          data = JSON.parse(data);
-        } catch (e) {
-          return;
-        }
-
-      }
+      const data =
+        event.data;
 
 
       if (
         data &&
-        data.type === "PATRONGBAA_OAUTH_CODE"
+        data.type ===
+          "PATRONGBAA_WA_EMBEDDED_SIGNUP"
       ) {
 
-        const code = data.code;
+        console.log(
+          "WA_EMBEDDED_SIGNUP relayed from popup:",
+          data.data
+        );
 
-        if (code) {
 
-          processAuthorizationCode(code);
+        handleCoexistenceEvent(
+          data.data
+        );
+
+      }
+
+    },
+    false
+  );
+
+
+  /*
+   * ------------------------------------------------------------
+   * RECEIVE OAUTH CODE FROM POPUP
+   * ------------------------------------------------------------
+   */
+
+  window.addEventListener(
+    "message",
+    function(event) {
+
+      if (
+        event.origin !==
+        window.location.origin
+      ) {
+
+        return;
+      }
+
+
+      const data =
+        event.data;
+
+
+      if (
+        data &&
+        data.type ===
+          "PATRONGBAA_OAUTH_CODE"
+      ) {
+
+        console.log(
+          "OAuth authorization code received from popup."
+        );
+
+
+        if (data.code) {
+
+          processAuthorizationCode(
+            data.code
+          );
 
         }
 
@@ -626,46 +705,58 @@
 
   /*
    * ------------------------------------------------------------
-   * Build the exact Coexistence OAuth URL.
+   * Build OAuth URL
    * ------------------------------------------------------------
    */
 
   function buildOAuthUrl() {
 
     const extras = {
+
       setup: {},
+
       featureType:
         "whatsapp_business_app_onboarding",
-      sessionInfoVersion: "3"
+
+      sessionInfoVersion:
+        "3"
+
     };
 
 
-    const params = new URLSearchParams();
+    const params =
+      new URLSearchParams();
+
 
     params.set(
       "client_id",
       APP_ID
     );
 
+
     params.set(
       "config_id",
       CONFIG_ID
     );
+
 
     params.set(
       "redirect_uri",
       REDIRECT_URI
     );
 
+
     params.set(
       "response_type",
       "code"
     );
 
+
     params.set(
       "override_default_response_type",
       "true"
     );
+
 
     params.set(
       "state",
@@ -673,10 +764,12 @@
       Date.now()
     );
 
+
     params.set(
       "extras",
       JSON.stringify(extras)
     );
+
 
     params.set(
       "locale",
@@ -694,7 +787,7 @@
 
   /*
    * ------------------------------------------------------------
-   * Start Meta Coexistence onboarding.
+   * START CONNECTION
    * ------------------------------------------------------------
    */
 
@@ -705,7 +798,10 @@
         "connectButton"
       );
 
-    button.disabled = true;
+
+    button.disabled =
+      true;
+
 
     setStatus(
       "Opening Meta WhatsApp Business onboarding...",
@@ -714,7 +810,8 @@
 
 
     /*
-     * Clear only old frontend session values.
+     * Clear previous frontend session data.
+     *
      * This does NOT affect n8n.
      */
 
@@ -722,8 +819,14 @@
       "WA_EMBEDDED_SIGNUP_EVENT"
     );
 
+
     sessionStorage.removeItem(
       "WA_WABA_ID"
+    );
+
+
+    sessionStorage.removeItem(
+      "PATRONGBAA_CODE_SENT"
     );
 
 
@@ -738,16 +841,15 @@
 
 
     /*
-     * Open Meta in a popup.
-     *
-     * This keeps this page alive so its global
-     * postMessage listener can receive the
-     * WA_EMBEDDED_SIGNUP event.
+     * Popup dimensions.
      */
 
-    const width = 900;
+    const width =
+      900;
 
-    const height = 800;
+    const height =
+      800;
+
 
     const left =
       Math.max(
@@ -755,12 +857,17 @@
         (window.screen.width - width) / 2
       );
 
+
     const top =
       Math.max(
         0,
         (window.screen.height - height) / 2
       );
 
+
+    /*
+     * Open Meta.
+     */
 
     const popup =
       window.open(
@@ -773,13 +880,13 @@
         ",left=" +
         left +
         ",top=" +
+        top +
         ",resizable=yes,scrollbars=yes"
       );
 
 
     /*
-     * If the browser blocks the popup,
-     * allow the user to retry.
+     * Popup blocked.
      */
 
     if (!popup) {
@@ -790,7 +897,10 @@
         "error"
       );
 
-      button.disabled = false;
+
+      button.disabled =
+        false;
+
 
       return;
     }
@@ -798,10 +908,6 @@
 
     popup.focus();
 
-
-    /*
-     * Keep the popup reference.
-     */
 
     window.patrongbaaOAuthPopup =
       popup;
@@ -818,20 +924,14 @@
 
   /*
    * ------------------------------------------------------------
-   * Process OAuth authorization code.
-   * ------------------------------------------------------------
-   *
-   * IMPORTANT:
-   *
-   * The code is sent immediately to the EXISTING n8n webhook.
-   *
-   * The Coexistence event is handled separately.
+   * PROCESS OAUTH AUTHORIZATION CODE
    * ------------------------------------------------------------
    */
 
   async function processAuthorizationCode(code) {
 
     if (!code) {
+
       return;
     }
 
@@ -846,7 +946,10 @@
       );
 
 
-    if (alreadySent === "true") {
+    if (
+      alreadySent ===
+      "true"
+    ) {
 
       debug(
         "Authorization code already submitted."
@@ -865,26 +968,46 @@
 
     try {
 
+      console.log(
+        "Sending authorization code to n8n..."
+      );
+
+
       const response =
         await fetch(
           N8N_WEBHOOK,
           {
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
               "Content-Type":
                 "application/json"
             },
 
-            body: JSON.stringify({
-              code: code
-            })
+            body:
+              JSON.stringify({
+                code:
+                  code
+              })
           }
         );
 
 
+      console.log(
+        "n8n HTTP status:",
+        response.status
+      );
+
+
       const text =
         await response.text();
+
+
+      console.log(
+        "n8n response received:",
+        text
+      );
 
 
       if (!response.ok) {
@@ -900,7 +1023,7 @@
 
 
       /*
-       * Mark the code as sent only after
+       * Mark as sent only after
        * n8n accepts the request.
        */
 
@@ -922,12 +1045,6 @@
       );
 
 
-      console.log(
-        "n8n response:",
-        text
-      );
-
-
     } catch (error) {
 
       console.error(
@@ -944,10 +1061,6 @@
       );
 
 
-      /*
-       * Allow another attempt.
-       */
-
       sessionStorage.removeItem(
         "PATRONGBAA_CODE_SENT"
       );
@@ -959,11 +1072,7 @@
 
   /*
    * ------------------------------------------------------------
-   * Handle OAuth callback.
-   * ------------------------------------------------------------
-   *
-   * When Meta redirects back to this GitHub Pages URL,
-   * the authorization code appears in the URL.
+   * HANDLE OAUTH CALLBACK
    * ------------------------------------------------------------
    */
 
@@ -1001,6 +1110,7 @@
         "error"
       );
 
+
       return;
     }
 
@@ -1017,8 +1127,11 @@
 
 
       /*
-       * If this page is running inside the popup,
-       * send the code back to the original page.
+       * If this page is inside the popup,
+       * send the code to the original page.
+       *
+       * We DO NOT submit it locally as well,
+       * preventing duplicate n8n requests.
        */
 
       if (
@@ -1032,38 +1145,45 @@
             {
               type:
                 "PATRONGBAA_OAUTH_CODE",
-              code: code
+
+              code:
+                code
             },
             window.location.origin
           );
 
-        } catch (e) {
+
+          console.log(
+            "OAuth authorization code relayed to opener."
+          );
+
+
+        } catch (error) {
 
           console.error(
-            "Could not send code to opener:",
-            e
+            "Could not send OAuth code to opener:",
+            error
           );
 
         }
+
+
+      } else {
+
+        /*
+         * If this is not a popup,
+         * process the code locally.
+         */
+
+        processAuthorizationCode(
+          code
+        );
 
       }
 
 
       /*
-       * Also process it locally.
-       *
-       * This is important because the callback page
-       * itself may be the page receiving the redirect.
-       */
-
-      processAuthorizationCode(
-        code
-      );
-
-
-      /*
-       * Remove the OAuth code from the visible URL
-       * after it has been captured.
+       * Remove the code from the URL.
        */
 
       try {
@@ -1074,11 +1194,13 @@
           REDIRECT_URI
         );
 
-      } catch (e) {
+      } catch (error) {
+
         console.log(
-          "Could not clean URL:",
-          e
+          "Could not clean OAuth URL:",
+          error
         );
+
       }
 
     }
@@ -1088,7 +1210,7 @@
 
   /*
    * ------------------------------------------------------------
-   * Popup monitoring.
+   * MONITOR POPUP
    * ------------------------------------------------------------
    */
 
@@ -1108,6 +1230,11 @@
           null;
 
 
+        /*
+         * Check whether the parent page
+         * already received the Coexistence event.
+         */
+
         const eventData =
           sessionStorage.getItem(
             "WA_EMBEDDED_SIGNUP_EVENT"
@@ -1119,7 +1246,9 @@
           try {
 
             const parsed =
-              JSON.parse(eventData);
+              JSON.parse(
+                eventData
+              );
 
 
             if (
@@ -1134,7 +1263,13 @@
 
             }
 
-          } catch (e) {}
+          } catch (error) {
+
+            console.log(
+              "Could not read stored Coexistence event."
+            );
+
+          }
 
         }
 
@@ -1142,6 +1277,35 @@
 
     },
     1000
+  );
+
+
+  /*
+   * ------------------------------------------------------------
+   * PAGE READY
+   * ------------------------------------------------------------
+   */
+
+  console.log(
+    "PatrongBAA Farms WhatsApp Coexistence page loaded."
+  );
+
+  console.log(
+    "App ID:",
+    APP_ID
+  );
+
+  console.log(
+    "Configuration ID:",
+    CONFIG_ID
+  );
+
+  console.log(
+    "OAuth listener ready."
+  );
+
+  console.log(
+    "WA_EMBEDDED_SIGNUP listener ready."
   );
 
 </script>
