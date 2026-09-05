@@ -414,9 +414,127 @@
    */
 
   window.addEventListener(
-    "message",
-    function(event) {
+  "message",
+  function(event) {
 
+    console.log("========== FACEBOOK MESSAGE ==========");
+    console.log("Origin:", event.origin);
+    console.log("Data type:", typeof event.data);
+    console.log("Raw data:", event.data);
+
+    /*
+     * Accept Facebook domains only.
+     */
+    const isFacebook =
+      event.origin === "https://www.facebook.com" ||
+      event.origin === "https://web.facebook.com" ||
+      event.origin === "https://business.facebook.com" ||
+      event.origin.endsWith(".facebook.com");
+
+    if (!isFacebook) {
+      console.log("Ignored non-Facebook message.");
+      return;
+    }
+
+    /*
+     * Facebook may send either:
+     * 1. an actual JavaScript object
+     * 2. a JSON string
+     */
+    let data = event.data;
+
+    if (typeof data === "string") {
+
+      try {
+        data = JSON.parse(data);
+        console.log("Parsed JSON:", data);
+      } catch (error) {
+
+        /*
+         * Do NOT call this an error anymore.
+         * Facebook sends other non-JSON messages as well.
+         */
+        console.log(
+          "Non-JSON Facebook message received:",
+          data
+        );
+
+        return;
+      }
+    }
+
+    /*
+     * We are specifically looking for
+     * WA_EMBEDDED_SIGNUP.
+     */
+    if (
+      data &&
+      typeof data === "object" &&
+      data.type === "WA_EMBEDDED_SIGNUP"
+    ) {
+
+      console.log(
+        "========================================"
+      );
+
+      console.log(
+        "WA_EMBEDDED_SIGNUP EVENT FOUND!"
+      );
+
+      console.log(
+        "Full event:",
+        data
+      );
+
+      console.log(
+        "Event:",
+        data.event
+      );
+
+      console.log(
+        "Version:",
+        data.version
+      );
+
+      console.log(
+        "WABA ID:",
+        data.data?.waba_id
+      );
+
+      console.log(
+        "Phone Number ID:",
+        data.data?.phone_number_id
+      );
+
+      console.log(
+        "Business ID:",
+        data.data?.business_id
+      );
+
+      console.log(
+        "========================================"
+      );
+
+      /*
+       * Pass the event to our existing handler.
+       */
+      handleCoexistenceEvent(data);
+
+      return;
+    }
+
+    /*
+     * Show what other Facebook messages look like,
+     * but do not interfere with the OAuth flow.
+     */
+    console.log(
+      "Facebook message received but not WA_EMBEDDED_SIGNUP."
+    );
+    
+  },
+  false
+);
+  
       /*
        * Only accept Facebook-related origins.
        */
