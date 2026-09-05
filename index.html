@@ -165,22 +165,28 @@
 
     /*
      * ============================================================
-     * PATRONGBAA FARMS - WHATSAPP COEXISTENCE ONBOARDING
+     * PATRONGBAA FARMS
+     * WHATSAPP COEXISTENCE ONBOARDING
      * ============================================================
      *
      * IMPORTANT:
      *
-     * We are deliberately NOT using FB.login().
+     * We are NOT going back to FB.login().
      *
-     * FB.login() was generating:
+     * The manual OAuth URL solved the redirect_uri problem.
      *
-     *   redirect_uri =
-     *   https://staticxx.facebook.com/...
+     * We keep that working approach.
      *
-     * which caused Meta's authorization-code validation error.
+     * We are now additionally listening for Meta's
+     * WA_EMBEDDED_SIGNUP session information so we can capture:
      *
-     * Instead, we construct the OAuth dialog URL manually and
-     * explicitly specify our stable GitHub Pages redirect URI.
+     *   - waba_id
+     *   - phone_number_id
+     *   - business_id
+     *
+     * especially for:
+     *
+     *   FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING
      */
 
 
@@ -196,11 +202,6 @@
     // ------------------------------------------------------------
     // FIXED REDIRECT URI
     // ------------------------------------------------------------
-    //
-    // THIS MUST BE IDENTICAL EVERYWHERE.
-    //
-    // Keep the final "/" exactly as shown.
-    //
 
     const REDIRECT_URI =
       "https://benwiston1-patrongbaa.github.io/patrongbaa-whatsapp-onboarding/";
@@ -222,12 +223,24 @@
 
 
     // ------------------------------------------------------------
+    // STORAGE KEYS
+    // ------------------------------------------------------------
+
+    const OAUTH_STATE_KEY =
+      "patrongbaa_oauth_state";
+
+    const SIGNUP_INFO_KEY =
+      "patrongbaa_whatsapp_signup_info";
+
+
+    // ------------------------------------------------------------
     // UI HELPERS
     // ------------------------------------------------------------
 
     function showStatus(message, type = "") {
 
-      const status = document.getElementById("status");
+      const status =
+        document.getElementById("status");
 
       status.textContent = message;
 
@@ -251,10 +264,6 @@
     // ------------------------------------------------------------
     // GENERATE STATE
     // ------------------------------------------------------------
-    //
-    // The state value protects the OAuth callback from being
-    // accepted if it does not belong to this onboarding attempt.
-    //
 
     function generateState() {
 
@@ -264,9 +273,207 @@
       crypto.getRandomValues(randomValues);
 
       return Array.from(randomValues)
-        .map(byte => byte.toString(16).padStart(2, "0"))
+        .map(byte =>
+          byte.toString(16).padStart(2, "0")
+        )
         .join("");
     }
+
+
+    // ------------------------------------------------------------
+    // COEXISTENCE SESSION INFO LISTENER
+    // ------------------------------------------------------------
+    //
+    // Meta sends a postMessage during Embedded Signup.
+    //
+    // We are specifically looking for:
+    //
+    //   type:
+    //     WA_EMBEDDED_SIGNUP
+    //
+    //   event:
+    //     FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING
+    //
+    // The payload can contain:
+    //
+    //   waba_id
+    //   phone_number_id
+    //   business_id
+    //
+    // We save the information in sessionStorage so that the
+    // OAuth callback can use it.
+    //
+
+    window.addEventListener(
+      "message",
+      function (event) {
+
+        // --------------------------------------------------------
+        // SECURITY: ACCEPT ONLY META DOMAINS
+        // --------------------------------------------------------
+
+        const allowedOrigin =
+          event.origin === "https://www.facebook.com" ||
+          event.origin === "https://web.facebook.com";
+
+        if (!allowedOrigin) {
+          return;
+        }
+
+
+        // --------------------------------------------------------
+        // PARSE EVENT
+        // --------------------------------------------------------
+
+        let data;
+
+        try {
+
+          data =
+            typeof event.data === "string"
+              ? JSON.parse(event.data)
+              : event.data;
+
+        } catch (error) {
+
+          // Ignore non-JSON messages from Meta.
+
+          return;
+        }
+
+
+        // --------------------------------------------------------
+        // ONLY PROCESS WHATSAPP EMBEDDED SIGNUP EVENTS
+        // --------------------------------------------------------
+
+        if (
+          !data ||
+          data.type !== "WA_EMBEDDED_SIGNUP"
+        ) {
+          return;
+        }
+
+
+        console.log(
+          "Meta WhatsApp Embedded Signup event:",
+          data
+        );
+
+
+        const eventName =
+          String(data.event || "").toUpperCase();
+
+
+        const payload =
+          data.data || {};
+
+
+        // --------------------------------------------------------
+        // SAVE SESSION INFORMATION
+        // --------------------------------------------------------
+
+        const signupInfo = {
+
+          event:
+            eventName,
+
+          waba_id:
+            payload.waba_id || null,
+
+          phone_number_id:
+            payload.phone_number_id || null,
+
+          business_id:
+            payload.business_id || null,
+
+          timestamp:
+            new Date().toISOString()
+
+        };
+
+
+        sessionStorage.setItem(
+          SIGNUP_INFO_KEY,
+          JSON.stringify(signupInfo)
+        );
+
+
+        // --------------------------------------------------------
+        // COEXISTENCE SUCCESS
+        // --------------------------------------------------------
+
+        if (
+          eventName ===
+          "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING"
+        ) {
+
+          console.log(
+            "Coexistence onboarding completed:",
+            signupInfo
+          );
+
+
+          showStatus(
+            "Meta has completed the WhatsApp Business app connection. Finishing the platform connection...",
+            "success"
+          );
+
+
+          return;
+        }
+
+
+        // --------------------------------------------------------
+        // STANDARD FINISH
+        // --------------------------------------------------------
+
+        if (
+          eventName === "FINISH"
+        ) {
+
+          console.log(
+            "Embedded Signup completed:",
+            signupInfo
+          );
+
+          return;
+        }
+
+
+        // --------------------------------------------------------
+        // ERROR
+        // --------------------------------------------------------
+
+        if (
+          eventName === "ERROR"
+        ) {
+
+          console.error(
+            "Meta Embedded Signup error:",
+            payload
+          );
+
+          showStatus(
+            "Meta returned an error during WhatsApp Business onboarding.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        // --------------------------------------------------------
+        // CANCEL / OTHER EVENTS
+        // --------------------------------------------------------
+
+        console.log(
+          "Meta Embedded Signup event:",
+          eventName,
+          payload
+        );
+
+      }
+    );
 
 
     // ------------------------------------------------------------
@@ -277,33 +484,42 @@
 
       setButtonDisabled(true);
 
+
       showStatus(
         "Opening Meta WhatsApp Business onboarding...",
         "loading"
       );
 
 
-      // Generate a fresh OAuth state value.
+      // ----------------------------------------------------------
+      // GENERATE FRESH STATE
+      // ----------------------------------------------------------
 
-      const state = generateState();
+      const state =
+        generateState();
 
-
-      // Save state locally so we can verify it after Meta
-      // redirects back to this page.
 
       sessionStorage.setItem(
-        "patrongbaa_oauth_state",
+        OAUTH_STATE_KEY,
         state
       );
 
 
-      /*
-       * ----------------------------------------------------------
-       * META OAUTH PARAMETERS
-       * ----------------------------------------------------------
-       */
+      // ----------------------------------------------------------
+      // CLEAR OLD SIGNUP INFORMATION
+      // ----------------------------------------------------------
 
-      const params = new URLSearchParams();
+      sessionStorage.removeItem(
+        SIGNUP_INFO_KEY
+      );
+
+
+      // ----------------------------------------------------------
+      // BUILD META OAUTH PARAMETERS
+      // ----------------------------------------------------------
+
+      const params =
+        new URLSearchParams();
 
 
       params.set(
@@ -342,18 +558,22 @@
       );
 
 
-      /*
-       * This is the critical Coexistence setting.
-       *
-       * DO NOT REMOVE IT.
-       */
+      // ----------------------------------------------------------
+      // CRITICAL COEXISTENCE SETTING
+      // ----------------------------------------------------------
 
       params.set(
         "extras",
         JSON.stringify({
+
           setup: {},
-          featureType: "whatsapp_business_app_onboarding",
-          sessionInfoVersion: "3"
+
+          featureType:
+            "whatsapp_business_app_onboarding",
+
+          sessionInfoVersion:
+            "3"
+
         })
       );
 
@@ -364,11 +584,9 @@
       );
 
 
-      /*
-       * ----------------------------------------------------------
-       * BUILD THE META OAUTH URL
-       * ----------------------------------------------------------
-       */
+      // ----------------------------------------------------------
+      // BUILD META URL
+      // ----------------------------------------------------------
 
       const oauthUrl =
         "https://www.facebook.com/" +
@@ -377,13 +595,57 @@
         params.toString();
 
 
+      console.log(
+        "Opening Meta OAuth:",
+        oauthUrl
+      );
+
+
       /*
-       * Navigate directly to Meta.
+       * IMPORTANT
        *
-       * We deliberately do NOT use FB.login().
+       * We use the same stable redirect URI that already worked.
+       *
+       * The OAuth page opens in the current browser window.
+       *
+       * DO NOT change redirect_uri.
        */
 
-      window.location.href = oauthUrl;
+      window.location.href =
+        oauthUrl;
+    }
+
+
+    // ------------------------------------------------------------
+    // GET SAVED COEXISTENCE INFORMATION
+    // ------------------------------------------------------------
+
+    function getSignupInfo() {
+
+      const stored =
+        sessionStorage.getItem(
+          SIGNUP_INFO_KEY
+        );
+
+
+      if (!stored) {
+        return null;
+      }
+
+
+      try {
+
+        return JSON.parse(stored);
+
+      } catch (error) {
+
+        console.error(
+          "Could not parse saved signup information:",
+          error
+        );
+
+        return null;
+      }
     }
 
 
@@ -402,19 +664,27 @@
       setButtonDisabled(true);
 
 
-      /*
-       * IMPORTANT:
-       *
-       * Keep the body format compatible with the existing
-       * n8n webhook.
-       *
-       * n8n currently reads:
-       *
-       *   {{$json.body.code}}
-       */
+      // ----------------------------------------------------------
+      // READ COEXISTENCE SESSION INFORMATION
+      // ----------------------------------------------------------
+
+      const signupInfo =
+        getSignupInfo();
+
+
+      console.log(
+        "Coexistence information available:",
+        signupInfo
+      );
+
+
+      // ----------------------------------------------------------
+      // BUILD REQUEST BODY
+      // ----------------------------------------------------------
 
       const body =
         new URLSearchParams();
+
 
       body.set(
         "code",
@@ -422,16 +692,69 @@
       );
 
 
-      /*
-       * Also send redirect_uri to n8n so the token exchange
-       * can use the exact same URI that was used by Meta.
-       */
-
       body.set(
         "redirect_uri",
         REDIRECT_URI
       );
 
+
+      /*
+       * These values are optional from n8n's current point of view,
+       * but sending them now means the onboarding workflow will
+       * receive them when Meta provides them.
+       */
+
+      if (
+        signupInfo &&
+        signupInfo.waba_id
+      ) {
+
+        body.set(
+          "waba_id",
+          signupInfo.waba_id
+        );
+      }
+
+
+      if (
+        signupInfo &&
+        signupInfo.phone_number_id
+      ) {
+
+        body.set(
+          "phone_number_id",
+          signupInfo.phone_number_id
+        );
+      }
+
+
+      if (
+        signupInfo &&
+        signupInfo.business_id
+      ) {
+
+        body.set(
+          "business_id",
+          signupInfo.business_id
+        );
+      }
+
+
+      if (
+        signupInfo &&
+        signupInfo.event
+      ) {
+
+        body.set(
+          "signup_event",
+          signupInfo.event
+        );
+      }
+
+
+      // ----------------------------------------------------------
+      // SEND TO N8N
+      // ----------------------------------------------------------
 
       try {
 
@@ -446,7 +769,8 @@
                   "application/x-www-form-urlencoded"
               },
 
-              body: body.toString()
+              body:
+                body.toString()
             }
           );
 
@@ -465,6 +789,10 @@
           );
         }
 
+
+        // --------------------------------------------------------
+        // SUCCESS
+        // --------------------------------------------------------
 
         showStatus(
           "Authorization code sent successfully. Completing WhatsApp Business Platform connection...",
@@ -498,7 +826,7 @@
 
 
     // ------------------------------------------------------------
-    // HANDLE META CALLBACK
+    // HANDLE META OAUTH CALLBACK
     // ------------------------------------------------------------
 
     function handleOAuthCallback() {
@@ -526,7 +854,7 @@
 
 
       // ----------------------------------------------------------
-      // USER CANCELLED / META ERROR
+      // META ERROR / USER CANCEL
       // ----------------------------------------------------------
 
       if (error) {
@@ -550,7 +878,7 @@
 
 
       // ----------------------------------------------------------
-      // NO AUTHORIZATION CODE
+      // NO CODE
       // ----------------------------------------------------------
 
       if (!code) {
@@ -565,7 +893,7 @@
 
       const savedState =
         sessionStorage.getItem(
-          "patrongbaa_oauth_state"
+          OAUTH_STATE_KEY
         );
 
 
@@ -595,7 +923,7 @@
       // ----------------------------------------------------------
 
       sessionStorage.removeItem(
-        "patrongbaa_oauth_state"
+        OAUTH_STATE_KEY
       );
 
 
@@ -608,7 +936,7 @@
 
 
     // ------------------------------------------------------------
-    // RUN CALLBACK CHECK WHEN PAGE LOADS
+    // PAGE LOAD
     // ------------------------------------------------------------
 
     window.addEventListener(
