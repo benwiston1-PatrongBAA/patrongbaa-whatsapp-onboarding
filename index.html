@@ -19,126 +19,128 @@
       margin: 0;
       min-height: 100vh;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f4f7f5;
-      color: #1f2937;
+      background: #f5f7f9;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       padding: 20px;
     }
 
     .container {
       width: 100%;
-      max-width: 620px;
-      background: #ffffff;
+      max-width: 560px;
+      background: white;
       border-radius: 18px;
-      padding: 35px 30px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-      text-align: center;
+      padding: 32px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
     }
 
     .logo {
-      width: 85px;
-      height: 85px;
-      border-radius: 50%;
-      margin: 0 auto 20px;
-      background: #0b7a3b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo h1 {
+      margin: 0;
       font-size: 28px;
-      font-weight: bold;
+      color: #1f2937;
     }
 
-    h1 {
-      margin: 0 0 10px;
-      font-size: 28px;
-      color: #0b7a3b;
+    .logo p {
+      margin-top: 8px;
+      color: #6b7280;
+      font-size: 15px;
     }
 
-    h2 {
-      margin: 0 0 15px;
-      font-size: 21px;
-      color: #222222;
+    .info {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      color: #166534;
+      font-size: 14px;
+      line-height: 1.5;
     }
 
-    p {
-      line-height: 1.6;
-      margin: 10px 0;
-    }
-
-    .description {
-      color: #5f6368;
-      margin-bottom: 25px;
-    }
-
-    .connect-button {
+    .button {
       width: 100%;
       border: none;
       border-radius: 10px;
-      padding: 16px 20px;
-      font-size: 17px;
+      padding: 15px 20px;
+      font-size: 16px;
       font-weight: bold;
-      color: #ffffff;
-      background: #0b7a3b;
       cursor: pointer;
-      transition: 0.2s ease;
+      background: #1877f2;
+      color: white;
+      transition: 0.2s;
     }
 
-    .connect-button:hover {
-      background: #096631;
+    .button:hover {
+      background: #166fe5;
     }
 
-    .connect-button:disabled {
+    .button:disabled {
       background: #9ca3af;
       cursor: not-allowed;
     }
 
-    .status {
-      margin-top: 22px;
-      padding: 14px;
+    #status {
+      margin-top: 20px;
+      padding: 15px;
       border-radius: 10px;
-      display: none;
+      background: #f3f4f6;
+      color: #374151;
       font-size: 14px;
       line-height: 1.5;
-      text-align: left;
-      white-space: pre-wrap;
+      display: none;
+    }
+
+    #status.success {
+      display: block;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+
+    #status.error {
+      display: block;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    #status.info {
+      display: block;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+
+    .details {
+      margin-top: 20px;
+      display: none;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 13px;
+    }
+
+    .details div {
+      margin-bottom: 8px;
       word-break: break-word;
     }
 
-    .status.loading {
-      display: block;
-      background: #eef6ff;
-      color: #1d4ed8;
-    }
-
-    .status.success {
-      display: block;
-      background: #ecfdf3;
-      color: #166534;
-    }
-
-    .status.error {
-      display: block;
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-
-    .info-box {
-      margin-top: 25px;
-      padding: 15px;
-      background: #f8fafc;
-      border-radius: 10px;
-      font-size: 13px;
-      color: #64748b;
-      text-align: left;
+    .details strong {
+      color: #111827;
     }
 
     .footer {
       margin-top: 25px;
+      text-align: center;
+      color: #9ca3af;
       font-size: 12px;
-      color: #94a3b8;
     }
   </style>
 </head>
@@ -148,41 +150,51 @@
   <div class="container">
 
     <div class="logo">
-      P
+      <h1>PatrongBAA Farms</h1>
+      <p>WhatsApp Business Platform Connection</p>
     </div>
 
-    <h1>PatrongBAA Farms</h1>
-
-    <h2>WhatsApp Business Connection</h2>
-
-    <p class="description">
-      Connect your WhatsApp Business app number to the
-      WhatsApp Business Platform while continuing to use
-      the WhatsApp Business app.
-    </p>
+    <div class="info">
+      Connect your existing WhatsApp Business app number to the
+      WhatsApp Business Platform while continuing to use the
+      WhatsApp Business app.
+    </div>
 
     <button
       id="connectButton"
-      class="connect-button"
-      onclick="startWhatsAppConnection()"
+      class="button"
+      onclick="startWhatsAppOnboarding()"
+      disabled
     >
-      Connect WhatsApp Business
+      Loading Facebook...
     </button>
 
-    <div
-      id="status"
-      class="status"
-    ></div>
+    <div id="status"></div>
 
-    <div class="info-box">
-      <strong>Important:</strong><br>
-      Your existing WhatsApp Business app number will remain
-      available for use while it is connected to the
-      WhatsApp Business Platform.
+    <div id="details" class="details">
+      <div>
+        <strong>WABA ID:</strong>
+        <span id="wabaId">Not received</span>
+      </div>
+
+      <div>
+        <strong>Phone Number ID:</strong>
+        <span id="phoneNumberId">Not received</span>
+      </div>
+
+      <div>
+        <strong>Business ID:</strong>
+        <span id="businessId">Not received</span>
+      </div>
+
+      <div>
+        <strong>Event:</strong>
+        <span id="eventName">Not received</span>
+      </div>
     </div>
 
     <div class="footer">
-      PatrongBAA Farms Procurement Platform
+      PatrongBAA Farms Procurement
     </div>
 
   </div>
@@ -192,944 +204,85 @@
        FACEBOOK JAVASCRIPT SDK
        ========================================================= -->
 
-  <script>
-    window.fbAsyncInit = function () {
-
-      FB.init({
-        appId: "1052159027462760",
-        cookie: true,
-        xfbml: true,
-        version: "v26.0"
-      });
-
-      console.log(
-        "Facebook SDK initialized."
-      );
-
-    };
-  </script>
-
-
   <script
     async
     defer
     crossorigin="anonymous"
-    src="https://connect.facebook.net/en_US/sdk.js"
-  ></script>
+    src="https://connect.facebook.net/en_US/sdk.js">
+  </script>
 
 
   <script>
 
-    /*
-     * ============================================================
-     * CONFIGURATION
-     * ============================================================
-     */
+    /* =========================================================
+       CONFIGURATION
+       ========================================================= */
 
-    const APP_ID =
-      "1052159027462760";
+    const APP_ID = "1052159027462760";
 
-    const CONFIG_ID =
-      "952366671241090";
+    const CONFIG_ID = "952366671241090";
 
     const N8N_WEBHOOK =
       "https://bernardmendy.app.n8n.cloud/webhook/patrongbaa-onboarding";
 
 
-    /*
-     * ============================================================
-     * DOM
-     * ============================================================
-     */
+    /* =========================================================
+       STATE
+       ========================================================= */
 
-    const connectButton =
-      document.getElementById(
-        "connectButton"
-      );
-
-    const statusBox =
-      document.getElementById(
-        "status"
-      );
-
-
-    /*
-     * ============================================================
-     * VARIABLES USED DURING SIGNUP
-     * ============================================================
-     */
+    let facebookReady = false;
 
     let authorizationCode = null;
 
-    let coexistenceInfo = {
-      waba_id: null,
-      phone_number_id: null,
-      business_id: null,
-      event: null
-    };
+    let coexistenceData = null;
 
-    let sendTimer = null;
-
-    let codeSent = false;
+    let webhookSent = false;
 
 
-    /*
-     * ============================================================
-     * STATUS
-     * ============================================================
-     */
+    /* =========================================================
+       DOM ELEMENTS
+       ========================================================= */
 
-    function showStatus(
-      message,
-      type
-    ) {
+    const connectButton =
+      document.getElementById("connectButton");
 
-      statusBox.textContent =
-        message;
+    const statusBox =
+      document.getElementById("status");
 
-      statusBox.className =
-        "status " + type;
+    const detailsBox =
+      document.getElementById("details");
 
-    }
+    const wabaIdBox =
+      document.getElementById("wabaId");
+
+    const phoneNumberIdBox =
+      document.getElementById("phoneNumberId");
+
+    const businessIdBox =
+      document.getElementById("businessId");
+
+    const eventNameBox =
+      document.getElementById("eventName");
 
 
-    /*
-     * ============================================================
-     * BUTTON
-     * ============================================================
-     */
+    /* =========================================================
+       STATUS HELPER
+       ========================================================= */
 
-    function setButtonDisabled(
-      disabled
-    ) {
+    function setStatus(message, type = "info") {
 
-      connectButton.disabled =
-        disabled;
+      statusBox.textContent = message;
 
-      if (disabled) {
+      statusBox.className = "";
 
-        connectButton.textContent =
-          "Connecting...";
-
-      } else {
-
-        connectButton.textContent =
-          "Connect WhatsApp Business";
-
-      }
+      statusBox.classList.add(type);
 
     }
 
 
-    /*
-     * ============================================================
-     * FACEBOOK / META EMBEDDED SIGNUP EVENT
-     *
-     * THIS LISTENER MUST EXIST BEFORE FB.login()
-     * ============================================================
-     */
-
-    window.addEventListener(
-      "message",
-      function (event) {
-
-        console.log(
-          "Message received from:",
-          event.origin
-        );
-
-        /*
-         * Meta may use Facebook origins during
-         * Embedded Signup.
-         */
-
-        const allowedOrigins = [
-          "https://www.facebook.com",
-          "https://web.facebook.com",
-          "https://business.facebook.com"
-        ];
-
-        if (
-          !allowedOrigins.includes(
-            event.origin
-          )
-        ) {
-
-          return;
-
-        }
-
-
-        let data =
-          event.data;
-
-
-        /*
-         * Some versions send an object.
-         * Some send a JSON string.
-         */
-
-        if (
-          typeof data ===
-          "string"
-        ) {
-
-          try {
-
-            data =
-              JSON.parse(data);
-
-          } catch (error) {
-
-            console.log(
-              "Message was not JSON."
-            );
-
-            return;
-
-          }
-
-        }
-
-
-        console.log(
-          "Meta message:",
-          data
-        );
-
-
-        /*
-         * We only want the WhatsApp
-         * Embedded Signup event.
-         */
-
-        if (
-          !data ||
-          data.type !==
-            "WA_EMBEDDED_SIGNUP"
-        ) {
-
-          return;
-
-        }
-
-
-        console.log(
-          "WA_EMBEDDED_SIGNUP event:",
-          data
-        );
-
-
-        /*
-         * Meta can place the information
-         * inside data.data or directly in data.
-         */
-
-        const eventData =
-          data.data || data;
-
-
-        /*
-         * Save event name.
-         */
-
-        coexistenceInfo.event =
-          eventData.event ||
-          data.event ||
-          null;
-
-
-        /*
-         * Save WABA ID.
-         */
-
-        coexistenceInfo.waba_id =
-          eventData.waba_id ||
-          data.waba_id ||
-          null;
-
-
-        /*
-         * Save phone number ID if supplied.
-         */
-
-        coexistenceInfo.phone_number_id =
-          eventData.phone_number_id ||
-          data.phone_number_id ||
-          null;
-
-
-        /*
-         * Save business ID if supplied.
-         */
-
-        coexistenceInfo.business_id =
-          eventData.business_id ||
-          data.business_id ||
-          null;
-
-
-        /*
-         * Save to sessionStorage.
-         */
-
-        if (
-          coexistenceInfo.waba_id
-        ) {
-
-          sessionStorage.setItem(
-            "waba_id",
-            coexistenceInfo.waba_id
-          );
-
-        }
-
-
-        if (
-          coexistenceInfo.phone_number_id
-        ) {
-
-          sessionStorage.setItem(
-            "phone_number_id",
-            coexistenceInfo.phone_number_id
-          );
-
-        }
-
-
-        if (
-          coexistenceInfo.business_id
-        ) {
-
-          sessionStorage.setItem(
-            "business_id",
-            coexistenceInfo.business_id
-          );
-
-        }
-
-
-        if (
-          coexistenceInfo.event
-        ) {
-
-          sessionStorage.setItem(
-            "wa_signup_event",
-            coexistenceInfo.event
-          );
-
-        }
-
-
-        /*
-         * VERY IMPORTANT DEBUG OUTPUT
-         */
-
-        console.log(
-          "Coexistence information available:",
-          coexistenceInfo
-        );
-
-
-        /*
-         * Successful Coexistence completion.
-         */
-
-        if (
-          coexistenceInfo.event ===
-          "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING"
-        ) {
-
-          showStatus(
-            "WhatsApp Business Coexistence completed successfully. " +
-            "Finishing the connection...",
-            "loading"
-          );
-
-        }
-
-
-        /*
-         * If the OAuth code already arrived,
-         * try sending it now that we have the
-         * Coexistence information.
-         */
-
-        attemptSendToN8n();
-
-      },
-      false
-    );
-
-
-    /*
-     * ============================================================
-     * WAIT FOR FACEBOOK SDK
-     * ============================================================
-     */
-
-    function waitForFacebookSDK(
-      callback
-    ) {
-
-      if (
-        typeof FB !== "undefined"
-      ) {
-
-        callback();
-
-        return;
-
-      }
-
-
-      showStatus(
-        "Loading Meta WhatsApp Business onboarding...",
-        "loading"
-      );
-
-
-      let attempts = 0;
-
-      const interval =
-        setInterval(
-          function () {
-
-            attempts++;
-
-
-            if (
-              typeof FB !== "undefined"
-            ) {
-
-              clearInterval(
-                interval
-              );
-
-              callback();
-
-              return;
-
-            }
-
-
-            /*
-             * 100 attempts × 100ms
-             * = 10 seconds.
-             */
-
-            if (
-              attempts >= 100
-            ) {
-
-              clearInterval(
-                interval
-              );
-
-              showStatus(
-                "Meta Facebook SDK could not be loaded. " +
-                "Please refresh the page and try again.",
-                "error"
-              );
-
-              setButtonDisabled(
-                false
-              );
-
-            }
-
-          },
-          100
-        );
-
-    }
-
-
-    /*
-     * ============================================================
-     * START WHATSAPP COEXISTENCE
-     * ============================================================
-     */
-
-    function startWhatsAppConnection() {
-
-      setButtonDisabled(
-        true
-      );
-
-
-      /*
-       * Clear previous session data.
-       */
-
-      sessionStorage.removeItem(
-        "waba_id"
-      );
-
-      sessionStorage.removeItem(
-        "phone_number_id"
-      );
-
-      sessionStorage.removeItem(
-        "business_id"
-      );
-
-      sessionStorage.removeItem(
-        "wa_signup_event"
-      );
-
-
-      authorizationCode =
-        null;
-
-
-      coexistenceInfo = {
-        waba_id: null,
-        phone_number_id: null,
-        business_id: null,
-        event: null
-      };
-
-
-      codeSent =
-        false;
-
-
-      showStatus(
-        "Opening Meta WhatsApp Business onboarding...",
-        "loading"
-      );
-
-
-      waitForFacebookSDK(
-        function () {
-
-          /*
-           * ====================================================
-           * FACEBOOK LOGIN FOR BUSINESS
-           * ====================================================
-           *
-           * This is the important part.
-           *
-           * We are NOT using window.location.href.
-           * We are NOT manually constructing the OAuth URL.
-           *
-           * FB.login launches the Embedded Signup flow.
-           */
-
-          FB.login(
-            function (response) {
-
-              console.log(
-                "FB.login response:",
-                response
-              );
-
-
-              /*
-               * User cancelled or Meta returned
-               * an error.
-               */
-
-              if (
-                !response ||
-                !response.authResponse
-              ) {
-
-                console.error(
-                  "FB.login did not return authResponse:",
-                  response
-                );
-
-
-                showStatus(
-                  "WhatsApp Business onboarding was cancelled " +
-                  "or Meta did not return an authorization response.",
-                  "error"
-                );
-
-
-                setButtonDisabled(
-                  false
-                );
-
-                return;
-
-              }
-
-
-              /*
-               * Get authorization code.
-               */
-
-              authorizationCode =
-                response.authResponse.code ||
-                null;
-
-
-              console.log(
-                "Authorization code received:",
-                authorizationCode
-                  ? "YES"
-                  : "NO"
-              );
-
-
-              if (
-                !authorizationCode
-              ) {
-
-                showStatus(
-                  "Meta completed the login flow but did not return " +
-                  "an authorization code.",
-                  "error"
-                );
-
-
-                setButtonDisabled(
-                  false
-                );
-
-                return;
-
-              }
-
-
-              showStatus(
-                "Authorization code received. " +
-                "Waiting for the WhatsApp Business Coexistence " +
-                "completion information...",
-                "loading"
-              );
-
-
-              /*
-               * Give Meta a short window to send
-               * WA_EMBEDDED_SIGNUP.
-               */
-
-              if (
-                sendTimer
-              ) {
-
-                clearTimeout(
-                  sendTimer
-                );
-
-              }
-
-
-              sendTimer =
-                setTimeout(
-                  function () {
-
-                    attemptSendToN8n();
-
-                  },
-                  5000
-                );
-
-
-              /*
-               * It may already have arrived.
-               */
-
-              attemptSendToN8n();
-
-            },
-
-            {
-              /*
-               * Business Login Configuration.
-               */
-
-              config_id:
-                CONFIG_ID,
-
-              /*
-               * We explicitly request an OAuth
-               * authorization code.
-               */
-
-              response_type:
-                "code",
-
-              /*
-               * Required when using code flow
-               * with Embedded Signup.
-               */
-
-              override_default_response_type:
-                true,
-
-              /*
-               * THIS activates WhatsApp Business
-               * App onboarding / Coexistence.
-               */
-
-              extras: {
-                setup: {},
-
-                featureType:
-                  "whatsapp_business_app_onboarding",
-
-                sessionInfoVersion:
-                  "3"
-              }
-            }
-          );
-
-        }
-      );
-
-    }
-
-
-    /*
-     * ============================================================
-     * SEND CODE + COEXISTENCE INFORMATION TO N8N
-     * ============================================================
-     */
-
-    function attemptSendToN8n() {
-
-      /*
-       * Don't send twice.
-       */
-
-      if (
-        codeSent
-      ) {
-
-        return;
-
-      }
-
-
-      /*
-       * We need the authorization code.
-       */
-
-      if (
-        !authorizationCode
-      ) {
-
-        return;
-
-      }
-
-
-      /*
-       * Read the latest session information.
-       */
-
-      const wabaId =
-        coexistenceInfo.waba_id ||
-        sessionStorage.getItem(
-          "waba_id"
-        ) ||
-        null;
-
-
-      const phoneNumberId =
-        coexistenceInfo.phone_number_id ||
-        sessionStorage.getItem(
-          "phone_number_id"
-        ) ||
-        null;
-
-
-      const businessId =
-        coexistenceInfo.business_id ||
-        sessionStorage.getItem(
-          "business_id"
-        ) ||
-        null;
-
-
-      const eventName =
-        coexistenceInfo.event ||
-        sessionStorage.getItem(
-          "wa_signup_event"
-        ) ||
-        null;
-
-
-      console.log(
-        "Coexistence information available:",
-        {
-          waba_id:
-            wabaId,
-
-          phone_number_id:
-            phoneNumberId,
-
-          business_id:
-            businessId,
-
-          event:
-            eventName
-        }
-      );
-
-
-      /*
-       * IMPORTANT:
-       *
-       * We prefer to wait for the Coexistence event.
-       *
-       * If Meta has not supplied WABA information yet,
-       * wait briefly rather than immediately sending
-       * incomplete information to n8n.
-       */
-
-      if (
-        !wabaId &&
-        !eventName
-      ) {
-
-        console.log(
-          "Waiting for WA_EMBEDDED_SIGNUP information..."
-        );
-
-        return;
-
-      }
-
-
-      codeSent =
-        true;
-
-
-      showStatus(
-        "Authorization code and WhatsApp Business " +
-        "Coexistence information received. " +
-        "Sending to the procurement platform...",
-        "loading"
-      );
-
-
-      fetch(
-        N8N_WEBHOOK,
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-
-              code:
-                authorizationCode,
-
-              /*
-               * Keep this so the n8n HTTP Request2
-               * continues using the exact redirect URI.
-               */
-
-              redirect_uri:
-                "https://benwiston1-patrongbaa.github.io/patrongbaa-whatsapp-onboarding/",
-
-              /*
-               * Coexistence information.
-               */
-
-              waba_id:
-                wabaId,
-
-              phone_number_id:
-                phoneNumberId,
-
-              business_id:
-                businessId,
-
-              event:
-                eventName
-
-            })
-        }
-      )
-      .then(
-        async function (response) {
-
-          const responseText =
-            await response.text();
-
-
-          console.log(
-            "n8n response:",
-            responseText
-          );
-
-
-          if (
-            !response.ok
-          ) {
-
-            throw new Error(
-              "n8n returned HTTP " +
-              response.status +
-              ": " +
-              responseText
-            );
-
-          }
-
-
-          showStatus(
-            "Authorization code sent successfully. " +
-            "WhatsApp Business Coexistence information " +
-            "was also sent to the procurement platform.",
-            "success"
-          );
-
-
-          setButtonDisabled(
-            false
-          );
-
-        }
-      )
-      .catch(
-        function (error) {
-
-          console.error(
-            "Error sending information to n8n:",
-            error
-          );
-
-
-          codeSent =
-            false;
-
-
-          showStatus(
-            "There was an error sending the WhatsApp Business " +
-            "connection information to the procurement platform.\n\n" +
-            error.message,
-            "error"
-          );
-
-
-          setButtonDisabled(
-            false
-          );
-
-        }
-      );
-
-    }
-
-
-    /*
-     * ============================================================
-     * PAGE READY
-     * ============================================================
-     */
+    /* =========================================================
+       PAGE LOAD
+       ========================================================= */
 
     console.log(
       "PatrongBAA Farms WhatsApp Coexistence page loaded."
@@ -1144,6 +297,610 @@
       "Configuration ID:",
       CONFIG_ID
     );
+
+
+    /* =========================================================
+       IMPORTANT:
+       LISTEN FOR META'S WA_EMBEDDED_SIGNUP EVENT
+       
+       This listener is completely independent from the
+       OAuth authorization-code callback.
+       ========================================================= */
+
+    window.addEventListener("message", function (event) {
+
+      console.log(
+        "MESSAGE RECEIVED",
+        {
+          origin: event.origin,
+          data: event.data,
+          dataType: typeof event.data
+        }
+      );
+
+
+      /* ---------------------------------------------------------
+         Only accept Facebook-related messages
+         --------------------------------------------------------- */
+
+      const allowedFacebookOrigin =
+        event.origin === "https://www.facebook.com" ||
+        event.origin === "https://web.facebook.com" ||
+        event.origin === "https://business.facebook.com";
+
+
+      if (!allowedFacebookOrigin) {
+
+        console.log(
+          "Ignoring message from non-Facebook origin:",
+          event.origin
+        );
+
+        return;
+      }
+
+
+      /* ---------------------------------------------------------
+         Meta may send non-JSON messages.
+         
+         DO NOT treat these as an error.
+         --------------------------------------------------------- */
+
+      let data;
+
+      try {
+
+        data =
+          typeof event.data === "string"
+            ? JSON.parse(event.data)
+            : event.data;
+
+      } catch (error) {
+
+        console.log(
+          "Facebook message was not JSON:",
+          event.data
+        );
+
+        return;
+      }
+
+
+      /* ---------------------------------------------------------
+         We are specifically looking for:
+         
+         type = WA_EMBEDDED_SIGNUP
+         --------------------------------------------------------- */
+
+      if (
+        !data ||
+        data.type !== "WA_EMBEDDED_SIGNUP"
+      ) {
+
+        console.log(
+          "Facebook message received but it was not WA_EMBEDDED_SIGNUP:",
+          data
+        );
+
+        return;
+      }
+
+
+      /* ---------------------------------------------------------
+         WE FOUND THE COEXISTENCE EVENT
+         --------------------------------------------------------- */
+
+      console.log(
+        "WA_EMBEDDED_SIGNUP RECEIVED",
+        data
+      );
+
+
+      coexistenceData = data;
+
+
+      /* ---------------------------------------------------------
+         Extract event information
+         --------------------------------------------------------- */
+
+      const eventName =
+        data.event || "Unknown event";
+
+      const payload =
+        data.data || {};
+
+
+      const wabaId =
+        payload.waba_id || null;
+
+      const phoneNumberId =
+        payload.phone_number_id || null;
+
+      const businessId =
+        payload.business_id || null;
+
+
+      /* ---------------------------------------------------------
+         Display information
+         --------------------------------------------------------- */
+
+      eventNameBox.textContent =
+        eventName;
+
+      wabaIdBox.textContent =
+        wabaId || "Not provided";
+
+      phoneNumberIdBox.textContent =
+        phoneNumberId || "Not provided";
+
+      businessIdBox.textContent =
+        businessId || "Not provided";
+
+
+      detailsBox.style.display =
+        "block";
+
+
+      console.log(
+        "Coexistence information available:",
+        {
+          event: eventName,
+          waba_id: wabaId,
+          phone_number_id: phoneNumberId,
+          business_id: businessId
+        }
+      );
+
+
+      /* ---------------------------------------------------------
+         FINISH EVENT
+         --------------------------------------------------------- */
+
+      if (
+        eventName ===
+        "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING"
+      ) {
+
+        console.log(
+          "WhatsApp Business Coexistence onboarding finished."
+        );
+
+
+        setStatus(
+          "WhatsApp Business Coexistence information received successfully. The WhatsApp Business app number has completed the Meta onboarding step.",
+          "success"
+        );
+
+
+        /*
+         IMPORTANT:
+         We DO NOT wait for this event before sending
+         the OAuth authorization code.
+
+         The authorization code is handled separately below.
+        */
+
+      }
+
+    });
+
+
+    /* =========================================================
+       FACEBOOK SDK INITIALIZATION
+       ========================================================= */
+
+    window.fbAsyncInit = function () {
+
+      console.log(
+        "Initializing Facebook SDK..."
+      );
+
+
+      FB.init({
+
+        appId: APP_ID,
+
+        cookie: true,
+
+        xfbml: true,
+
+        version: "v26.0"
+
+      });
+
+
+      facebookReady = true;
+
+
+      console.log(
+        "Facebook SDK initialized."
+      );
+
+
+      connectButton.disabled = false;
+
+      connectButton.textContent =
+        "Connect WhatsApp Business";
+
+
+      setStatus(
+        "Facebook is ready. Click the button to begin WhatsApp Business Coexistence onboarding.",
+        "info"
+      );
+
+    };
+
+
+    /* =========================================================
+       START WHATSAPP ONBOARDING
+       ========================================================= */
+
+    function startWhatsAppOnboarding() {
+
+
+      if (!facebookReady) {
+
+        setStatus(
+          "Facebook SDK is not ready yet. Please wait a moment and try again.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      /* -------------------------------------------------------
+         Reset previous state
+         ------------------------------------------------------- */
+
+      authorizationCode = null;
+
+      coexistenceData = null;
+
+      webhookSent = false;
+
+
+      detailsBox.style.display =
+        "none";
+
+
+      wabaIdBox.textContent =
+        "Not received";
+
+      phoneNumberIdBox.textContent =
+        "Not received";
+
+      businessIdBox.textContent =
+        "Not received";
+
+      eventNameBox.textContent =
+        "Not received";
+
+
+      /* -------------------------------------------------------
+         Disable button while Meta onboarding is running
+         ------------------------------------------------------- */
+
+      connectButton.disabled = true;
+
+      connectButton.textContent =
+        "Connecting...";
+
+
+      setStatus(
+        "Opening Meta WhatsApp Business onboarding...",
+        "info"
+      );
+
+
+      console.log(
+        "Starting FB.login..."
+      );
+
+
+      /* =======================================================
+         FACEBOOK LOGIN FOR BUSINESS / EMBEDDED SIGNUP
+         ======================================================= */
+
+      FB.login(
+
+        function (response) {
+
+          console.log(
+            "FB.login response:",
+            response
+          );
+
+
+          /* ---------------------------------------------------
+             Check for authorization response
+             --------------------------------------------------- */
+
+          if (
+            !response ||
+            !response.authResponse
+          ) {
+
+            console.error(
+              "No authResponse received.",
+              response
+            );
+
+
+            connectButton.disabled = false;
+
+            connectButton.textContent =
+              "Try Again";
+
+
+            setStatus(
+              "Meta did not return an authorization response. Please try again.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          /* ---------------------------------------------------
+             IMPORTANT CORRECTION
+             
+             Get the authorization code immediately.
+             
+             DO NOT wait for WA_EMBEDDED_SIGNUP.
+             --------------------------------------------------- */
+
+          authorizationCode =
+            response.authResponse.code;
+
+
+          console.log(
+            "Authorization code received:",
+            authorizationCode
+              ? "YES"
+              : "NO"
+          );
+
+
+          if (!authorizationCode) {
+
+            console.error(
+              "Authorization code was missing.",
+              response
+            );
+
+
+            connectButton.disabled = false;
+
+            connectButton.textContent =
+              "Try Again";
+
+
+            setStatus(
+              "Meta completed the login step but no authorization code was returned.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          /* ---------------------------------------------------
+             SEND CODE TO N8N IMMEDIATELY
+             
+             This is the key correction.
+             --------------------------------------------------- */
+
+          setStatus(
+            "Authorization code received. Sending it to the PatrongBAA Farms backend...",
+            "info"
+          );
+
+
+          sendAuthorizationCodeToN8N(
+            authorizationCode
+          );
+
+        },
+
+
+        /* =====================================================
+           LOGIN OPTIONS
+           ===================================================== */
+
+        {
+          config_id: CONFIG_ID,
+
+          response_type: "code",
+
+          override_default_response_type: true,
+
+          extras: {
+
+            setup: {},
+
+            featureType:
+              "whatsapp_business_app_onboarding",
+
+            sessionInfoVersion: "3"
+
+          }
+
+        }
+
+      );
+
+    }
+
+
+    /* =========================================================
+       SEND AUTHORIZATION CODE TO N8N
+       ========================================================= */
+
+    async function sendAuthorizationCodeToN8N(code) {
+
+
+      if (webhookSent) {
+
+        console.log(
+          "Webhook already sent. Skipping duplicate."
+        );
+
+        return;
+      }
+
+
+      if (!code) {
+
+        console.error(
+          "Cannot send empty authorization code."
+        );
+
+        return;
+      }
+
+
+      webhookSent = true;
+
+
+      console.log(
+        "Sending authorization code to n8n..."
+      );
+
+
+      /*
+       * IMPORTANT:
+       * Do not console.log the actual authorization code.
+       * It is a credential.
+       */
+
+
+      try {
+
+        const response =
+          await fetch(
+            N8N_WEBHOOK,
+            {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+
+                code: code
+
+              })
+
+            }
+          );
+
+
+        console.log(
+          "n8n HTTP status:",
+          response.status
+        );
+
+
+        const responseText =
+          await response.text();
+
+
+        console.log(
+          "n8n response received."
+        );
+
+
+        if (!response.ok) {
+
+          console.error(
+            "n8n returned an error:",
+            responseText
+          );
+
+
+          webhookSent = false;
+
+
+          connectButton.disabled = false;
+
+          connectButton.textContent =
+            "Try Again";
+
+
+          setStatus(
+            "The authorization code was received, but the backend returned an error. Check the n8n execution.",
+            "error"
+          );
+
+          return;
+        }
+
+
+        /* -----------------------------------------------------
+           Backend accepted the authorization code
+           ----------------------------------------------------- */
+
+        console.log(
+          "Authorization code successfully sent to n8n."
+        );
+
+
+        setStatus(
+          "Authorization code sent successfully. Completing WhatsApp Business Platform connection...",
+          "success"
+        );
+
+
+        connectButton.textContent =
+          "Connection Processing";
+
+
+        /*
+         * IMPORTANT:
+         *
+         * We now wait only for the UI/session event to arrive
+         * for display purposes.
+         *
+         * We DO NOT block the OAuth code exchange anymore.
+         */
+
+        if (!coexistenceData) {
+
+          console.log(
+            "Waiting for WA_EMBEDDED_SIGNUP information..."
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Error sending authorization code to n8n:",
+          error
+        );
+
+
+        webhookSent = false;
+
+
+        connectButton.disabled = false;
+
+        connectButton.textContent =
+          "Try Again";
+
+
+        setStatus(
+          "Could not contact the PatrongBAA Farms backend. Please check the n8n webhook.",
+          "error"
+        );
+
+      }
+
+    }
 
   </script>
 
